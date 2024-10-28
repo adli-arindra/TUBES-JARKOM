@@ -25,16 +25,29 @@ def handle_client(conn, addr):
 
     conn.close()
 
+def send(msg):
+    message = msg.encode(FORMAT)
+    msg_len = len(message)
+    send_len = str(msg_len).encode(FORMAT)
+    send_len += b' ' * (HEADER - len(send_len))
+    server.sendall(send_len)
+    server.sendall(message)
 
 def start():
     server.listen()
     print(f"SERVER IS LISTENING ON {SERVER}")
     while True:
         conn, address = server.accept()
+        print("\n", address)
         thread = threading.Thread(target=handle_client, args=(conn, address))
         thread.start()
-        print(f"ACTIVE CONNECTIONS : {threading.activeCount() - 1}")
+        print(f"ACTIVE CONNECTIONS : {threading.active_count() - 1}")
 
 if __name__ == "__main__":
     print("SERVER IS STARTING...")
-    start()
+    threading.Thread(target=start).start()
+
+    while True:
+        msg = input("Enter your msg : ")
+        send(msg)
+        

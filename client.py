@@ -1,4 +1,5 @@
 import socket
+import threading
 
 HEADER = 64
 PORT = 5050
@@ -19,8 +20,25 @@ def send(msg):
     client.send(message)
 
 
-while True:
-    pesan = input()
-    send(pesan)
 
+def handle_client(conn, addr):
+    print(f"NEW CONNECTION: {addr}\n")
 
+    connected = True
+    while connected:
+        msg_length = int(conn.recv(HEADER).decode(FORMAT))
+        msg = conn.recv(msg_length).decode(FORMAT)
+        if msg == DISCONNECT_MSG:
+            connected = False
+    
+        print(f"[{addr}] : {msg}")
+
+    conn.close()
+
+if __name__ == "__main__":
+    listen = threading.Thread(target=handle_client, args=(client, ADDRESS))
+    listen.start()
+
+    while True:
+        msg = input()
+        send(msg)
