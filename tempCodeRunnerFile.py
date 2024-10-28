@@ -1,6 +1,3 @@
-def handle_client(conn, addr):
-    print(f"NEW CONNECTION: {addr}\n")
-
     connected = True
     while connected:
         msg_length = int(conn.recv(HEADER).decode(FORMAT))
@@ -8,6 +5,4 @@ def handle_client(conn, addr):
         if msg == DISCONNECT_MSG:
             connected = False
     
-        print(f"[{addr}] : {msg}")
-
-    conn.close()
+        # print(f"[{addr}] : {msg}")
