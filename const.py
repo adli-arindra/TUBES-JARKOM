@@ -12,3 +12,5 @@ ACK = "ack"
 
 TRUE = "1"
 FALSE = "0"
+
+FONT = ("Arial", (16))
