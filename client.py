@@ -5,6 +5,7 @@ from const import *
 class Client():
     def __init__(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        print(self.socket)
         self.message = ""
         self.sender = ""
 
@@ -27,7 +28,7 @@ class Client():
         else:
             return False
 
-    def send(self, msg) -> None:
+    def send(self, msg:str) -> None:
         self.socket.sendto(msg.encode(FORMAT), SERVER)
     
     def recv(self) -> str:
@@ -49,4 +50,4 @@ class Client():
 
 
 
-client = Client()
+# client = Client()

@@ -117,10 +117,12 @@ class App(ctk.CTk):
             self.mid_frame.pack(expand=True, fill="both")
             self.bottom_frame.pack(fill="both")
 
+            self.addChatBox("SYSTEM", "DO NOT USE '-' IN THE MESSAGE!")
+            self.addChatBox("SYSTEM", "please use the format '<IP Address>-<PORT>-<MESSAGE>' to send private messages!")
             threading.Thread(target=self.getIncomingMessages).start()
 
         def sendMessage(self):
-            content = self.textbox.get("1.0", ctk.END).strip('\n')
+            content = str(self.textbox.get("1.0", ctk.END).strip('\n'))
             self.master.client.send(content)
             self.textbox.delete("1.0", "end")
 
