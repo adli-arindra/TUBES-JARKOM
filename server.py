@@ -51,8 +51,14 @@ class Server():
                     if v == address:
                         username = k
                         break
-                msg = username + ":" + self.last_msg
-                self.sendToAll(msg)
+                if "-" in self.last_msg:
+                    target_ip = self.last_msg.split("-")[0]
+                    target_port = int(self.last_msg.split("-")[1])
+                    msg = username + ":" + "<private-msg> " + self.last_msg.split("-")[2]
+                    self.send(msg, (target_ip, target_port))
+                else:
+                    msg = username + ":" + self.last_msg
+                    self.sendToAll(msg)
 
     def validatePassword(self, address) -> bool:
         while self.last_addr != address:
