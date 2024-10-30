@@ -1,5 +1,5 @@
 import customtkinter as ctk
-import client
+import past_client
 
 class App(ctk.CTk):
     def __init__(self):
@@ -41,7 +41,7 @@ class App(ctk.CTk):
             self.button.grid(row=2, column=0, columnspan=2, padx=self.p, pady=self.p)
         
         def login(self):
-            self.client, self.index = client.connect()
+            self.client, self.index = past_client.connect()
             if (not self.client): 
                 self.warning("Failed connecting to server")
                 return
@@ -50,7 +50,7 @@ class App(ctk.CTk):
         
         def validatePassword(self):
             pw = self.password.get("1.0", ctk.END).strip('\n')
-            valid = client.validatePassword(self.client, self.index, pw)
+            valid = past_client.validatePassword(self.client, self.index, pw)
             if not valid:
                 self.warning("Password is not valid")
                 return
@@ -59,7 +59,7 @@ class App(ctk.CTk):
 
         def validateUsername(self):
             uname = self.username.get("1.0", ctk.END).strip('\n')
-            valid = client.validateUsername(self.client, self.index, uname)
+            valid = past_client.validateUsername(self.client, self.index, uname)
             if not valid:
                 self.warning("Username is already taken")
                 return

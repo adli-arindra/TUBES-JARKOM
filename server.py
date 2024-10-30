@@ -1,77 +1,68 @@
 import socket
 import threading
+from const import *
+from time import sleep
 
-HEADER = 64
-PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
-ADDRESS = (SERVER, PORT)
-FORMAT = 'utf-8'
-DISCONNECT_MSG = "!DISC"
-SERVER_PASS = "jarkomjuara"
+class Server():
+    clients = {}
+    last_msg = ""
+    last_addr = ""
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(ADDRESS)
+    def __init__(self):
+        print(f"STARTING SERVER [{SERVER_IP}, {PORT}]")
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind((SERVER_IP, PORT))
 
-clients = {}
-usernames = {}
-
-def start():
-    server.listen()
-    print(f"SERVER IS LISTENING ON {SERVER}")
-    while True:
-        conn, address = server.accept()
-        index = address[0] + "-" + str(address[1])
-        clients[index] = conn
-        thread = threading.Thread(target=handle_client, args=(conn, index))
-        thread.start()
-
-def validateUsername(conn, index) -> bool:
-    uname_length = int(conn.recv(HEADER).decode(FORMAT))
-    uname = conn.recv(uname_length).decode(FORMAT)
-    print(uname)
-    if uname in usernames.values():
-        forward(index, index + ":0")
-        return True
-    else:
-        usernames[index] = uname
-        forward(index, index + ":1")
-        return False
-
-def validatePassword(conn, index) -> bool:
-    pass_length = int(conn.recv(HEADER).decode(FORMAT))
-    password = conn.recv(pass_length).decode(FORMAT)
-    if password == (SERVER_PASS):
-        forward(index, index + ":1")
-        return True
-    else:
-        forward(index, index + ":0")
-        return False
-
-def handle_client(conn, index):
-    print(f"ACTIVE CONNECTIONS : {threading.active_count() - 1}")
-    if not validatePassword(conn, index): return
-    if not validateUsername(conn, index): return
-    connected = True
-    while connected:
-        msg_length = int(conn.recv(HEADER).decode(FORMAT))
-        msg = conn.recv(msg_length).decode(FORMAT)
-        if msg == DISCONNECT_MSG:
-            connected = False
+        while True:
+            self.last_msg, self.last_addr = self.recv()
+            if self.last_msg == SYN:
+                threading.Thread(target=self.handleClient, kwargs={'address':self.last_addr}).start()
     
-        forward(index, msg)
+    def send(self, msg, address) -> None:
+        self.socket.sendto(msg.encode(FORMAT), address)
+        self.last_msg = ""
+        self.last_addr = ""
 
-    conn.close()
+    def recv(self) -> tuple:
+        msg, address = self.socket.recvfrom(1024)
+        msg = msg.decode(FORMAT)
+        return (msg, address)
 
-def forward(index, msg):
-    targetIndex = msg.split(':')[0]
-    msg = f"[{index}] : " + msg.split(':')[1]
-    message = msg.encode(FORMAT)
-    msg_len = len(message)
-    send_len = str(msg_len).encode(FORMAT)
-    send_len += b' ' * (HEADER - len(send_len))
-    clients[targetIndex].send(send_len)
-    clients[targetIndex].send(message)
+    def handleClient(self, address) -> bool:
+        self.send(SYN_ACK, address)
+        connected = True
+        password_valid = self.validatePassword(address)
+        if not password_valid: return False
+        username_valid = self.validateUsername(address)
+        if not username_valid: return False
+
+        print("CONNECTED TO ", address)
+
+    def validatePassword(self, address) -> bool:
+        while self.last_addr != address:
+            sleep(0.1)
+        else:
+            if self.last_msg == SERVER_PASS:
+                self.send(TRUE, address)
+                return True
+            else:
+                self.send(FALSE, address)
+                return False
+
+    
+    def validateUsername(self, address) -> bool:
+        while self.last_addr != address:
+            sleep(0.1)
+        else:
+            if not self.last_msg in self.clients:
+                self.clients[self.last_msg] = self.last_addr
+                self.send(TRUE, address)
+                return True
+            else:
+                self.send(FALSE, address)
+                return False
+    
 
 
 if __name__ == "__main__":
-    start()
+    server = Server()
