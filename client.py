@@ -5,6 +5,8 @@ from const import *
 class Client():
     def __init__(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.message = ""
+        self.sender = ""
 
     def connect(self) -> bool:
         try:
@@ -27,12 +29,24 @@ class Client():
 
     def send(self, msg) -> None:
         self.socket.sendto(msg.encode(FORMAT), SERVER)
-        print(">", msg)
     
     def recv(self) -> str:
         msg, address = self.socket.recvfrom(1024)
         msg = msg.decode(FORMAT)
+        print(msg)
         return msg
+    
+    def startListening(self):
+        threading.Thread(target=self.listen).start()
+
+    def listen(self) -> None:
+        print("Joined chatroom")
+        while True:
+            raw_msg = self.recv()
+            username, msg = raw_msg.split(':')
+            self.message = msg
+            self.sender = username
+
 
 
 client = Client()

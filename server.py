@@ -23,6 +23,11 @@ class Server():
         self.last_msg = ""
         self.last_addr = ""
 
+    def sendToAll(self, msg) -> None:
+        for i in self.clients.values():
+            print(i)
+            self.send(msg, i)
+
     def recv(self) -> tuple:
         msg, address = self.socket.recvfrom(1024)
         msg = msg.decode(FORMAT)
@@ -38,6 +43,17 @@ class Server():
 
         print("CONNECTED TO ", address)
 
+        while connected:
+            sleep(0.1)
+            if self.last_addr == address:
+                username = ""
+                for k, v in self.clients.items():
+                    if v == address:
+                        username = k
+                        break
+                msg = username + ":" + self.last_msg
+                self.sendToAll(msg)
+
     def validatePassword(self, address) -> bool:
         while self.last_addr != address:
             sleep(0.1)
@@ -48,7 +64,6 @@ class Server():
             else:
                 self.send(FALSE, address)
                 return False
-
     
     def validateUsername(self, address) -> bool:
         while self.last_addr != address:
