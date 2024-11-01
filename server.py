@@ -2,6 +2,7 @@ import socket
 import threading
 from const import *
 from time import sleep
+from caesarcipher import encrypt, decrypt
 
 class Server():
     clients = {}
@@ -19,18 +20,20 @@ class Server():
                 threading.Thread(target=self.handleClient, kwargs={'address':self.last_addr}).start()
     
     def send(self, msg, address) -> None:
+        msg = encrypt(msg)
         self.socket.sendto(msg.encode(FORMAT), address)
         self.last_msg = ""
         self.last_addr = ""
 
     def sendToAll(self, msg) -> None:
         for i in self.clients.values():
-            print(i)
             self.send(msg, i)
 
     def recv(self) -> tuple:
         msg, address = self.socket.recvfrom(1024)
         msg = msg.decode(FORMAT)
+        msg = decrypt(msg)
+        print(msg)
         return (msg, address)
 
     def handleClient(self, address) -> bool:
