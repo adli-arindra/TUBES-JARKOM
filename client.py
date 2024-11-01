@@ -1,6 +1,7 @@
 import socket
 import threading
 from const import *
+from caesarcipher import encrypt, decrypt
 
 class Client():
     def __init__(self):
@@ -29,11 +30,13 @@ class Client():
             return False
 
     def send(self, msg:str) -> None:
+        msg = encrypt(msg)
         self.socket.sendto(msg.encode(FORMAT), SERVER)
     
     def recv(self) -> str:
         msg, address = self.socket.recvfrom(1024)
         msg = msg.decode(FORMAT)
+        msg = decrypt(msg)
         print(msg)
         return msg
     
